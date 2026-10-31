@@ -23,7 +23,7 @@ final class Manager
         foreach (['include_ids', 'exclude_ids'] as $key) {
             if (!preg_match('/^(?:[1-9]\d*(?:\s*,\s*[1-9]\d*)*)?$/D', $values[$key])) { throw new \InvalidArgumentException('ID должны быть положительными числами через запятую.'); }
             $ids = $values[$key] === '' ? [] : array_unique(array_map('intval', explode(',', $values[$key])));
-            if (count($ids) > 1000) { throw new \InvalidArgumentException('Не более 1000 ресурсов.'); }
+            if (count($ids) > 5000) { throw new \InvalidArgumentException('Не более 5000 ресурсов.'); }
             $values[$key] = implode(',', $ids);
         }
         $sections = json_decode($values['sections']);
@@ -57,12 +57,12 @@ final class Manager
         $rows = [];
         $query = $this->modx->newQuery(modResource::class, ['context_key' => $key, 'deleted' => 0]);
         $query->sortby('id', 'ASC');
-        $query->limit(2001);
+        $query->limit(10001);
         foreach ($this->modx->getIterator(modResource::class, $query) as $resource) {
             if (!$resource->checkPolicy('view')) { continue; }
             $rows[] = ['id' => (int) $resource->get('id'), 'title' => (string) $resource->get('pagetitle'), 'published' => (bool) $resource->get('published')];
         }
-        return ['settings' => $settings, 'resources' => array_slice($rows, 0, 2000), 'truncated' => count($rows) > 2000, 'public_url' => rtrim((string) $context->getOption('site_url'), '/') . '/llms.txt'];
+        return ['settings' => $settings, 'resources' => array_slice($rows, 0, 10000), 'truncated' => count($rows) > 10000, 'public_url' => rtrim((string) $context->getOption('site_url'), '/') . '/llms.txt'];
     }
 
     public function save(string $key, array $values): void

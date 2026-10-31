@@ -20,11 +20,11 @@
         <h2>Страницы и разделы <span id="lf-count"></span></h2>
         <p class="lf-muted">Порядок ссылок задаётся порядком ID. Неопубликованные и закрытые страницы не попадут в результат.</p>
         <label>Поиск по названию или ID<input id="lf-search" type="search" placeholder="Найти страницу"></label>
-        <div class="lf-actions"><button id="lf-select-all" type="button">Выбрать все найденные</button><button id="lf-select-published" type="button">Выбрать опубликованные</button><button id="lf-select-none" type="button">Снять выбор найденных</button><button id="lf-select-invert" type="button">Инвертировать найденные</button><button id="lf-clear-all" type="button">Очистить весь выбор</button></div><p class="lf-muted">Действия учитывают поиск и загруженную таблицу. Максимум 1000 выбранных ID. Исключения сохраняются.</p>
+        <div class="lf-actions"><button id="lf-select-all" type="button">Выбрать все найденные</button><button id="lf-select-published" type="button">Выбрать опубликованные</button><button id="lf-select-none" type="button">Снять выбор найденных</button><button id="lf-select-invert" type="button">Инвертировать найденные</button><button id="lf-clear-all" type="button">Очистить весь выбор</button></div><p class="lf-muted">Действия учитывают поиск по всему загруженному списку. Максимум 5000 выбранных ID. Исключения сохраняются.</p>
         <div class="lf-table-wrap"><table><thead><tr><th>Включить</th><th>Страница</th><th>Раздел</th></tr></thead><tbody id="lf-rows"></tbody></table></div>
+        <div class="lf-pagination"><button id="lf-page-prev" type="button">← Назад</button><span id="lf-page-info" aria-live="polite"></span><button id="lf-page-next" type="button">Вперёд →</button></div>
         <p id="lf-limit" class="lf-muted"></p>
-        <label>Выбранные ID в нужном порядке<input id="lf-include_ids" placeholder="1,12,15"></label>
-        <label>Исключить ID<input id="lf-exclude_ids" placeholder="Например: 8,9"></label>
+        <details class="lf-advanced"><summary>Ручная настройка ID</summary><label>Выбранные ID в нужном порядке<input id="lf-include_ids" placeholder="1,12,15"></label><label>Исключить ID<input id="lf-exclude_ids" placeholder="Например: 8,9"></label></details>
         </div>
         <div class="lf-doc-heading"><h2>LLMS для отдельных страниц</h2><div class="lf-actions"><button id="lf-generate-documents" type="button">Создать карточки из выбранных</button><button id="lf-add-document" type="button">+ Добавить LLMS для страницы</button></div></div>
         <p class="lf-muted">Автоматические карточки создаются для выбранных опубликованных страниц. Если задан поиск, используются только найденные страницы. Повторно карточки не создаются; максимум 200. Цена и другие поля miniShop3 появятся в карточках товаров, если указаны выше.</p>
@@ -33,7 +33,8 @@
         <p class="lf-muted">После включения публикации адреса обслуживает MODX. Нужны настроенные Friendly URLs. Существующий файл или ресурс с таким адресом имеет приоритет.</p>
         </section><aside class="lf-card lf-preview"><h2>Предпросмотр llms.txt</h2><p id="lf-preview-note" class="lf-muted">Нажмите «Предпросмотр», чтобы проверить документ.</p><pre id="lf-output" tabindex="0"></pre><button id="lf-download" type="button" disabled>Скачать llms.txt</button></aside></div>`;
         const el = id => root.querySelector('#lf-' + id);
-        let resources = [], sections = {}, documents = [], dirty = false, busy = false, current = '', preview = '', downloadName = 'llms.txt';
+        let resources = [], sections = {}, documents = [], dirty = false, busy = false, current = '', preview = '', downloadName = 'llms.txt', pageIndex = 0;
+        const pageSize = 25, expandedDocuments = new Set();
         const fields = ['title', 'description', 'include_ids', 'exclude_ids', 'main_mode', 'main_markdown', 'enabled', 'tv_names', 'ms3_fields'];
         function status(text, error = false) { el('status').textContent = text; el('status').className = error ? 'lf-error' : 'lf-notice'; }
         function changed() { dirty = true; preview = ''; mainBytes = null; stats(); el('download').disabled = true; el('preview-note').textContent = 'Настройки изменены. Обновите предпросмотр.'; status('Есть несохранённые изменения.'); }
@@ -48,10 +49,10 @@
             const ids = new Set(selected());
             if (mode === 'clear') ids.clear();
             else filteredResources().forEach(resource => { const id = String(resource.id); if (mode === 'none' || (mode === 'invert' && ids.has(id))) ids.delete(id); else if (mode !== 'published' || resource.published) ids.add(id); });
-            if (ids.size > 1000) { status('Выбор превышает 1000 страниц. Уточните поиск или сократите текущий список. Изменения не применены.', true); return; }
+            if (ids.size > 5000) { status('Выбор превышает 5000 страниц. Уточните поиск или сократите текущий список. Изменения не применены.', true); return; }
             el('include_ids').value = Array.from(ids).join(','); changed(); renderRows();
         }
-        function setBusy(value) { busy = value; root.setAttribute('aria-busy', String(value)); root.querySelectorAll('input,textarea,select,button').forEach(node => { node.disabled = value; }); el('download').disabled = value || !preview; }
+        function setBusy(value) { busy = value; root.setAttribute('aria-busy', String(value)); root.querySelectorAll('input,textarea,select,button').forEach(node => { node.disabled = value; }); el('download').disabled = value || !preview; if (!value) renderRows(); }
         async function request(action, data = {}) {
             const body = new URLSearchParams({action, context: current, csrf: cfg.csrf, ...data});
             if (window.MODx && MODx.siteId) body.set('HTTP_MODAUTH', MODx.siteId);
@@ -66,8 +67,9 @@
         function renderDocuments() {
             el('documents').replaceChildren();
             documents.forEach((item, index) => {
-                const card = document.createElement('section'); card.className = 'lf-document';
-                const heading = document.createElement('h3'); heading.textContent = 'Страница ' + (index + 1); card.append(heading);
+                const card = document.createElement('details'); card.className = 'lf-document'; card.open = expandedDocuments.has(item);
+                const heading = document.createElement('summary'); heading.textContent = '#' + (index + 1) + ' · ' + (item.title || 'Без названия') + (item.mode === 'resource' ? ' · ресурс #' + item.resource_id : ' · вручную'); card.append(heading);
+                card.addEventListener('toggle', () => { if (card.open) expandedDocuments.add(item); else expandedDocuments.delete(item); });
                 function field(label, name, type = 'input', choices = null) {
                     const wrapper = document.createElement('label'); wrapper.append(document.createTextNode(label));
                     const control = document.createElement(type);
@@ -88,20 +90,26 @@
                 const view = document.createElement('button'); view.type = 'button'; view.textContent = 'Предпросмотр страницы';
                 view.addEventListener('click', async () => { if (busy) return; setBusy(true); try { const data = await request('preview_document', {...values(), slug: item.slug}); preview = data.text; downloadName = item.slug + '.md'; el('output').textContent = preview; el('preview-note').textContent = 'Карточка: ' + item.title; status('Предпросмотр карточки обновлён.'); } catch (error) { status(error.message, true); } finally { setBusy(false); } });
                 const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Удалить';
-                remove.addEventListener('click', () => { if (!window.confirm('Удалить эту карточку? Изменение применится после сохранения.')) return; documents.splice(index, 1); changed(); renderDocuments(); });
+                remove.addEventListener('click', () => { if (!window.confirm('Удалить эту карточку? Изменение применится после сохранения.')) return; documents.splice(index, 1); expandedDocuments.delete(item); changed(); renderDocuments(); });
                 actions.append(view, remove); card.append(actions); el('documents').append(card);
             });
             if (!documents.length) { const empty = document.createElement('p'); empty.className = 'lf-empty'; empty.textContent = 'Карточек пока нет. Добавьте страницу, чтобы дать AI подробное описание.'; el('documents').append(empty); }
         }
         function selected() { return el('include_ids').value.split(',').map(s => s.trim()).filter(Boolean); }
         function renderRows() {
-            const ids = selected();
-            el('count').textContent = '(' + new Set(ids).size + ')';
+            const ids = new Set(selected());
+            el('count').textContent = '(' + ids.size + ')';
+            const matches = filteredResources();
+            const pages = Math.max(1, Math.ceil(matches.length / pageSize));
+            pageIndex = Math.min(pageIndex, pages - 1);
+            el('page-info').textContent = matches.length ? `${pageIndex * pageSize + 1}–${Math.min((pageIndex + 1) * pageSize, matches.length)} из ${matches.length}` : 'Страницы не найдены';
+            el('page-prev').disabled = pageIndex === 0;
+            el('page-next').disabled = pageIndex >= pages - 1;
             const fragment = document.createDocumentFragment();
-            filteredResources().forEach(resource => {
+            matches.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize).forEach(resource => {
                 const row = document.createElement('tr'), checkCell = document.createElement('td'), titleCell = document.createElement('td'), sectionCell = document.createElement('td');
-                const check = document.createElement('input'); check.type = 'checkbox'; check.checked = ids.includes(String(resource.id)); check.setAttribute('aria-label', 'Включить ' + resource.title);
-                check.addEventListener('change', () => { const next = selected().filter(id => id !== String(resource.id)); if (check.checked) next.push(String(resource.id)); el('include_ids').value = next.join(','); changed(); el('count').textContent = '(' + new Set(next).size + ')'; });
+                const check = document.createElement('input'); check.type = 'checkbox'; check.checked = ids.has(String(resource.id)); check.setAttribute('aria-label', 'Включить ' + resource.title);
+                check.addEventListener('change', () => { const next = selected().filter(id => id !== String(resource.id)); if (check.checked) next.push(String(resource.id)); if (new Set(next).size > 5000) { check.checked = false; status('Можно выбрать не более 5000 страниц.', true); return; } el('include_ids').value = next.join(','); changed(); el('count').textContent = '(' + new Set(next).size + ')'; });
                 checkCell.append(check); titleCell.textContent = '#' + resource.id + ' · ' + resource.title + (resource.published ? '' : ' — не опубликована');
                 const section = document.createElement('input'); section.value = sections[resource.id] || ''; section.placeholder = 'Pages'; section.setAttribute('aria-label', 'Раздел для ' + resource.title);
                 section.addEventListener('input', () => { if (section.value.trim()) sections[resource.id] = section.value; else delete sections[resource.id]; changed(); });
@@ -117,18 +125,18 @@
                 el('visit-rows').replaceChildren(); el('visit-summary').textContent = 'Нажмите «Обновить журнал» для контекста «' + current + '».';
                 fields.forEach(name => { el(name).value = data.settings[name] || ''; });
                 sections = JSON.parse(data.settings.sections || '{}'); if (!sections || Array.isArray(sections)) sections = {};
-                documents = JSON.parse(data.settings.documents || '[]');
+                documents = JSON.parse(data.settings.documents || '[]'); expandedDocuments.clear(); pageIndex = 0;
                 el('main_mode').value = data.settings.main_mode || 'auto'; el('enabled').value = data.settings.enabled || '0';
                 el('public-url').textContent = data.public_url;
                 if (/^https?:\/\//i.test(data.public_url)) el('public-url').href = data.public_url;
                 resources = data.resources; dirty = false; preview = ''; el('output').textContent = ''; el('preview-note').textContent = 'Нажмите «Предпросмотр», чтобы проверить документ.';
-                el('limit').textContent = data.truncated ? 'Показаны первые 2000 страниц. Остальные можно добавить по ID ниже.' : '';
+                el('limit').textContent = data.truncated ? 'Показаны первые 10000 страниц. Остальные можно добавить по ID в ручной настройке.' : '';
                 mainBytes = null; renderRows(); renderDocuments(); showMode(); stats(); status('Настройки контекста «' + current + '» загружены.');
             } catch (error) { current = previous; el('context').value = previous; status(error.message, true); }
             finally { setBusy(false); }
         }
         fields.forEach(name => el(name).addEventListener('input', () => { changed(); if (name === 'include_ids') renderRows(); if (name === 'main_mode') showMode(); }));
-        el('add-document').addEventListener('click', () => { documents.push({slug: 'page-' + Date.now().toString(36), title: '', url: '', mode: 'manual', resource_id: 0, markdown: '', section: 'Материалы для AI'}); changed(); renderDocuments(); el('documents').lastElementChild.scrollIntoView({block: 'center', behavior: 'smooth'}); });
+        el('add-document').addEventListener('click', () => { const item = {slug: 'page-' + Date.now().toString(36), title: '', url: '', mode: 'manual', resource_id: 0, markdown: '', section: 'Материалы для AI'}; documents.push(item); expandedDocuments.add(item); changed(); renderDocuments(); el('documents').lastElementChild.scrollIntoView({block: 'center', behavior: 'smooth'}); });
         el('generate-documents').addEventListener('click', () => {
             const selectedIds = new Set(selected());
             const excludedIds = new Set(el('exclude_ids').value.split(',').map(id => id.trim()));
@@ -148,7 +156,9 @@
             if (new TextEncoder().encode(JSON.stringify([...documents, ...additions])).length > 60000) { status('Общий объём карточек превышает 60 КБ. Уточните поиск или сократите выбор.', true); return; }
             documents.push(...additions); changed(); renderDocuments(); status('Создано карточек: ' + additions.length + '. Проверьте предпросмотр и сохраните настройки.');
         });
-        el('search').addEventListener('input', renderRows);
+        el('search').addEventListener('input', () => { pageIndex = 0; renderRows(); });
+        el('page-prev').addEventListener('click', () => { pageIndex--; renderRows(); });
+        el('page-next').addEventListener('click', () => { pageIndex++; renderRows(); });
         el('check').addEventListener('click', async () => {
             if (busy || !current) return;
             setBusy(true);

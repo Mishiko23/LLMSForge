@@ -70,6 +70,7 @@ const assert = require('node:assert/strict');
     await page.locator('#lf-search').fill('Nordic');
     await page.locator('#lf-generate-documents').click();
     assert.equal(await page.locator('.lf-document').count(), 2);
+    assert.equal(await page.locator('.lf-document').last().getAttribute('open'), null);
     assert.equal(await page.locator('.lf-document').last().getByLabel('Ресурс: страница, товар, категория или статья').inputValue(), '2');
     await page.locator('#lf-generate-documents').click();
     assert.equal(await page.locator('.lf-document').count(), 2);
@@ -78,6 +79,32 @@ const assert = require('node:assert/strict');
     await page.screenshot({path: path.join(__dirname, '../docs/admin-preview.png'), fullPage: true});
     await page.setViewportSize({width: 390, height: 844});
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    const large = await browser.newPage({viewport: {width: 1440, height: 900}});
+    await large.setContent('<html><body><div id="llmsforge-app"></div></body></html>');
+    await large.evaluate(() => {
+        window.LLMSForgeConfig = {url: '/test', csrf: 'test'};
+        window.Ext = {onReady: fn => fn()};
+        window.MODx = {add: config => config.listeners.afterrender()};
+        window.fetch = async (_url, options) => {
+            const action = new URLSearchParams(options.body).get('action');
+            const data = action === 'contexts' ? {contexts: [{key: 'web', name: 'Site'}]} : {
+                settings: {title: 'Site', description: '', include_ids: '', exclude_ids: '', sections: '{}', main_mode: 'auto', main_markdown: '', enabled: '0', documents: '[]'},
+                resources: Array.from({length: 5000}, (_, i) => ({id: i + 1, title: 'Page ' + (i + 1), published: true})),
+                public_url: 'https://example.com/llms.txt'
+            };
+            return {ok: true, json: async () => ({success: true, object: data})};
+        };
+    });
+    await large.addScriptTag({content: fs.readFileSync(path.join(__dirname, '../assets/components/llmsforge/mgr.js'), 'utf8')});
+    await large.getByText('Настройки контекста «web» загружены.').waitFor();
+    assert.equal(await large.locator('#lf-rows tr').count(), 25);
+    assert.match(await large.locator('#lf-page-info').textContent(), /1–25 из 5000/);
+    await large.locator('#lf-page-next').click();
+    assert.match(await large.locator('#lf-page-info').textContent(), /26–50 из 5000/);
+    await large.locator('#lf-search').fill('4999');
+    assert.equal(await large.locator('#lf-rows tr').count(), 1);
+    assert.match(await large.locator('#lf-page-info').textContent(), /1–1 из 1/);
+    await large.close();
     assert.deepEqual(errors, []);
     await browser.close();
     console.log('Interface checks passed (mock MODX API): edit, cards, preview, save, mobile layout.');

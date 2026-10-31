@@ -33,7 +33,7 @@ final class Generator
         $pages = [];
         $documents = new Documents($this->modx);
         // Explicit selection avoids accidentally exposing newly created resources.
-        foreach (array_slice($ids, 0, 1000) as $id) {
+        foreach (array_slice($ids, 0, 5000) as $id) {
             if (in_array($id, $excluded, true)) {
                 continue;
             }

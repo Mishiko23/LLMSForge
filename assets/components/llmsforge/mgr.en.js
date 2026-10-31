@@ -9,7 +9,7 @@
         'TV для Markdown-карточек (имена через запятую)': 'TVs for Markdown cards (comma separated)', 'Поля miniShop3 для Markdown-карточек': 'miniShop3 fields for Markdown cards',
         'Основной llms.txt': 'Main llms.txt', 'Собрать из выбранных страниц': 'Build from selected pages', 'Редактировать Markdown вручную': 'Edit Markdown manually', 'Содержимое llms.txt': 'llms.txt content',
         'Поиск по названию или ID': 'Search by title or ID', 'Выбрать все найденные': 'Select all matches', 'Выбрать опубликованные': 'Select published',
-        'Снять выбор найденных': 'Deselect matches', 'Инвертировать найденные': 'Invert matches', 'Очистить весь выбор': 'Clear selection',
+        'Снять выбор найденных': 'Deselect matches', 'Инвертировать найденные': 'Invert matches', 'Очистить весь выбор': 'Clear selection', '← Назад': '← Previous', 'Вперёд →': 'Next →', 'Ручная настройка ID': 'Edit IDs manually',
         'Включить': 'Include', 'Страница': 'Page', 'Раздел': 'Section', 'Выбранные ID в нужном порядке': 'Selected IDs in order', 'Исключить ID': 'Exclude IDs',
         'LLMS для отдельных страниц': 'LLMS for individual pages', 'Создать карточки из выбранных': 'Create cards from selected', '+ Добавить LLMS для страницы': '+ Add page LLMS', 'Сохранить настройки': 'Save settings', 'Предпросмотр': 'Preview',
         'Предпросмотр llms.txt': 'llms.txt preview', 'Скачать llms.txt': 'Download llms.txt', 'Скачать документ': 'Download document', 'Название': 'Title',
