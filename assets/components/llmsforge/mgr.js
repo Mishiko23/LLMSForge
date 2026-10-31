@@ -26,8 +26,8 @@
         <label>Выбранные ID в нужном порядке<input id="lf-include_ids" placeholder="1,12,15"></label>
         <label>Исключить ID<input id="lf-exclude_ids" placeholder="Например: 8,9"></label>
         </div>
-        <div class="lf-doc-heading"><h2>LLMS для отдельных страниц</h2><button id="lf-add-document" type="button">+ Добавить LLMS для страницы</button></div>
-        <p class="lf-muted">Подготовьте отдельный текст для товара, категории или статьи. Выберите ресурс MODX для автоматического получения содержимого либо напишите Markdown вручную.</p>
+        <div class="lf-doc-heading"><h2>LLMS для отдельных страниц</h2><div class="lf-actions"><button id="lf-generate-documents" type="button">Создать карточки из выбранных</button><button id="lf-add-document" type="button">+ Добавить LLMS для страницы</button></div></div>
+        <p class="lf-muted">Автоматические карточки создаются для выбранных опубликованных страниц. Если задан поиск, используются только найденные страницы. Повторно карточки не создаются; максимум 200. Цена и другие поля miniShop3 появятся в карточках товаров, если указаны выше.</p>
         <div id="lf-documents"></div>
         <div class="lf-actions"><button id="lf-save" class="lf-primary" type="button">Сохранить настройки</button><button id="lf-preview" type="button">Предпросмотр</button></div>
         <p class="lf-muted">После включения публикации адреса обслуживает MODX. Нужны настроенные Friendly URLs. Существующий файл или ресурс с таким адресом имеет приоритет.</p>
@@ -129,6 +129,25 @@
         }
         fields.forEach(name => el(name).addEventListener('input', () => { changed(); if (name === 'include_ids') renderRows(); if (name === 'main_mode') showMode(); }));
         el('add-document').addEventListener('click', () => { documents.push({slug: 'page-' + Date.now().toString(36), title: '', url: '', mode: 'manual', resource_id: 0, markdown: '', section: 'Материалы для AI'}); changed(); renderDocuments(); el('documents').lastElementChild.scrollIntoView({block: 'center', behavior: 'smooth'}); });
+        el('generate-documents').addEventListener('click', () => {
+            const selectedIds = new Set(selected());
+            const excludedIds = new Set(el('exclude_ids').value.split(',').map(id => id.trim()));
+            const visibleIds = new Set(filteredResources().map(resource => resource.id));
+            const existingIds = new Set(documents.filter(item => item.mode === 'resource').map(item => item.resource_id));
+            const usedSlugs = new Set(documents.map(item => item.slug));
+            const candidates = resources.filter(resource => selectedIds.has(String(resource.id)) && visibleIds.has(resource.id) && resource.published && !excludedIds.has(String(resource.id)) && !existingIds.has(resource.id));
+            if (!candidates.length) { status('Нет новых выбранных опубликованных страниц. Проверьте поиск, исключения и уже созданные карточки.', true); return; }
+            if (documents.length + candidates.length > 200) { status('Можно хранить не более 200 карточек. Уточните поиск или сократите выбор.', true); return; }
+            const additions = candidates.map(resource => {
+                const base = 'resource-' + resource.id;
+                let slug = base, suffix = 2;
+                while (usedSlugs.has(slug)) slug = base + '-' + suffix++;
+                usedSlugs.add(slug);
+                return {slug, title: resource.title, url: '', mode: 'resource', resource_id: resource.id, markdown: '', section: sections[resource.id] || 'Материалы для AI'};
+            });
+            if (new TextEncoder().encode(JSON.stringify([...documents, ...additions])).length > 60000) { status('Общий объём карточек превышает 60 КБ. Уточните поиск или сократите выбор.', true); return; }
+            documents.push(...additions); changed(); renderDocuments(); status('Создано карточек: ' + additions.length + '. Проверьте предпросмотр и сохраните настройки.');
+        });
         el('search').addEventListener('input', renderRows);
         el('check').addEventListener('click', async () => {
             if (busy || !current) return;

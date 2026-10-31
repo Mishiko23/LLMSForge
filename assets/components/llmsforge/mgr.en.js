@@ -11,7 +11,7 @@
         'Поиск по названию или ID': 'Search by title or ID', 'Выбрать все найденные': 'Select all matches', 'Выбрать опубликованные': 'Select published',
         'Снять выбор найденных': 'Deselect matches', 'Инвертировать найденные': 'Invert matches', 'Очистить весь выбор': 'Clear selection',
         'Включить': 'Include', 'Страница': 'Page', 'Раздел': 'Section', 'Выбранные ID в нужном порядке': 'Selected IDs in order', 'Исключить ID': 'Exclude IDs',
-        'LLMS для отдельных страниц': 'LLMS for individual pages', '+ Добавить LLMS для страницы': '+ Add page LLMS', 'Сохранить настройки': 'Save settings', 'Предпросмотр': 'Preview',
+        'LLMS для отдельных страниц': 'LLMS for individual pages', 'Создать карточки из выбранных': 'Create cards from selected', '+ Добавить LLMS для страницы': '+ Add page LLMS', 'Сохранить настройки': 'Save settings', 'Предпросмотр': 'Preview',
         'Предпросмотр llms.txt': 'llms.txt preview', 'Скачать llms.txt': 'Download llms.txt', 'Скачать документ': 'Download document', 'Название': 'Title',
         'Раздел в основном файле': 'Section in main file', 'Источник содержимого': 'Content source', 'Написать Markdown вручную': 'Write Markdown manually',
         'Получать из ресурса MODX': 'Read MODX resource', 'Полный URL исходной страницы': 'Full source page URL', 'Markdown для AI': 'Markdown for AI',
