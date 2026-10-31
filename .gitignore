@@ -1,0 +1,4 @@
+/core/components/llmsforge/var/
+/*.transport.zip
+/dist/
+/node_modules/
