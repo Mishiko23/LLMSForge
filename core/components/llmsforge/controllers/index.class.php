@@ -14,5 +14,8 @@ class LLMSForgeIndexManagerController extends \MODX\Revolution\modExtraManagerCo
         $this->addCss($base . 'mgr.css?v=0.6.0');
         $this->addHtml('<script>window.LLMSForgeConfig=' . json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';</script>');
         $this->addJavascript($base . 'mgr.js?v=0.6.0');
+        if (str_starts_with((string) $this->modx->getOption('cultureKey', null, 'ru'), 'en')) {
+            $this->addJavascript($base . 'mgr.en.js?v=0.6.0');
+        }
     }
 }
