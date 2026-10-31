@@ -34,12 +34,18 @@ try {
         $visitDir = MODX_CORE_PATH . 'components/llmsforge/var/visits';
         $writablePath = $visitDir;
         while (!file_exists($writablePath) && dirname($writablePath) !== $writablePath) { $writablePath = dirname($writablePath); }
+        $basePath = rtrim((string) $siteContext->getOption('base_path', MODX_BASE_PATH), '/\\') . '/';
+        $fileConflict = is_file($basePath . 'llms.txt');
+        $resourceConflict = $modx->getObject(\MODX\Revolution\modResource::class, ['context_key' => $key, 'uri' => 'llms.txt', 'deleted' => 0]) !== null;
         $checks = [
             'Маршрут llms.txt' => $plugin && !(bool) $plugin->get('disabled'),
             'Журнал посещений' => $tracker && !(bool) $tracker->get('disabled'),
             'Публикация в контексте' => (string) $siteContext->getOption('llmsforge.enabled', '0') === '1',
             'Адрес сайта' => filter_var($siteContext->getOption('site_url'), FILTER_VALIDATE_URL) !== false,
             'Запись журнала' => is_dir($writablePath) && is_writable($writablePath),
+            'Адрес llms.txt свободен' => !$fileConflict && !$resourceConflict,
+            'Расширение DOM' => extension_loaded('dom'),
+            'PHP 8.1+' => PHP_VERSION_ID >= 80100,
         ];
         $reply(true, ['checks' => $checks, 'url' => rtrim((string) $siteContext->getOption('site_url'), '/') . '/llms.txt']);
     }

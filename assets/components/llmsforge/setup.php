@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     try {
         if ((int) ($modx->getVersionData()['version'] ?? 0) !== 3) { throw new RuntimeException('Требуется MODX 3.'); }
+        if (PHP_VERSION_ID < 80100 || !extension_loaded('dom') || !extension_loaded('json')) { throw new RuntimeException('Требуется PHP 8.1+, расширения DOM и JSON.'); }
         $component = MODX_CORE_PATH . 'components/llmsforge/';
         foreach (['src/Generator.php', 'src/Renderer.php', 'src/Manager.php', 'src/Documents.php', 'controllers/index.class.php', 'elements/snippets/llmsforge.php', 'elements/plugins/router.php'] as $file) {
             if (!is_readable($component . $file)) { throw new RuntimeException('Не загружен файл core/components/llmsforge/' . $file); }
@@ -54,6 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $eventKey = ['pluginid' => $plugin->get('id'), 'event' => 'OnPageNotFound'];
             $event = $modx->getObject(\MODX\Revolution\modPluginEvent::class, $eventKey) ?? $modx->newObject(\MODX\Revolution\modPluginEvent::class);
             $save($event, $eventKey + ['priority' => 0]);
+            $checkEvent = $modx->getObject(\MODX\Revolution\modEvent::class, ['name' => 'OnLLMSForgeResourceCheck']) ?? $modx->newObject(\MODX\Revolution\modEvent::class);
+            $save($checkEvent, ['name' => 'OnLLMSForgeResourceCheck', 'service' => 1, 'groupname' => 'LLMS Forge']);
             $trackingSource = file_get_contents($component . 'elements/plugins/visits.php');
             if ($trackingSource === false || !is_file($component . 'src/Visits.php')) { throw new RuntimeException('Загрузите файлы статистики Visits.php и visits.php.'); }
             $tracking = $modx->getObject(\MODX\Revolution\modPlugin::class, ['name' => 'LLMSForgeVisits']) ?? $modx->newObject(\MODX\Revolution\modPlugin::class);

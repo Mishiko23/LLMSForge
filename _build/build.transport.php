@@ -16,8 +16,11 @@ $modx = new modX();
 $modx->initialize('mgr');
 if ((int) ($modx->getVersionData()['version'] ?? 0) !== 3) { throw new RuntimeException('MODX 3 required'); }
 $builder = new modPackageBuilder($modx);
-$builder->createPackage('llmsforge', '0.5.0', 'alpha');
+$builder->createPackage('llmsforge', '0.6.0', 'alpha');
 $builder->registerNamespace('llmsforge', false, true, '{core_path}components/llmsforge/');
+$checkEvent = $modx->newObject(\MODX\Revolution\modEvent::class);
+$checkEvent->fromArray(['name' => 'OnLLMSForgeResourceCheck', 'service' => 1, 'groupname' => 'LLMS Forge'], '', true);
+$builder->putVehicle($builder->createVehicle($checkEvent, [xPDOTransport::UNIQUE_KEY => 'name', xPDOTransport::PRESERVE_KEYS => false, xPDOTransport::UPDATE_OBJECT => true]));
 $source = dirname(__DIR__) . '/core/components/llmsforge';
 $snippet = $modx->newObject(modSnippet::class);
 $snippet->fromArray([
@@ -53,7 +56,7 @@ foreach (\LLMSForge\Manager::DEFAULTS as $name => $value) {
 $builder->setPackageAttributes([
     'license' => file_get_contents(dirname(__DIR__) . '/COPYING'),
     'readme' => file_get_contents(dirname(__DIR__) . '/README.md'),
-    'changelog' => "0.5.0-alpha\n- Installation diagnostics for routing, publication and visit logs.\n- Curated llms.txt and Markdown cards for MODX 3.\n- AI bot request reporting and context-specific settings.",
+    'changelog' => "0.6.0-alpha\n- Public URL conflict and PHP requirements checks.\n- Optional TV and miniShop3 data fields in Markdown cards.\n- HTML to Markdown conversion and custom resource access event.",
 ]);
 if (!$builder->pack()) { throw new RuntimeException('Package build failed'); }
-echo "Built llmsforge-0.5.0-alpha in MODX core/packages\n";
+echo "Built llmsforge-0.6.0-alpha in MODX core/packages\n";

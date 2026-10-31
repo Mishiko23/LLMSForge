@@ -7,14 +7,14 @@ require_once __DIR__ . '/Documents.php';
 
 final class Manager
 {
-    public const DEFAULTS = ['title' => '', 'description' => '', 'include_ids' => '', 'exclude_ids' => '', 'sections' => '{}', 'main_mode' => 'auto', 'main_markdown' => '', 'documents' => '[]', 'enabled' => '0'];
+    public const DEFAULTS = ['title' => '', 'description' => '', 'include_ids' => '', 'exclude_ids' => '', 'sections' => '{}', 'main_mode' => 'auto', 'main_markdown' => '', 'documents' => '[]', 'enabled' => '0', 'tv_names' => '', 'ms3_fields' => 'price,article'];
     public function __construct(private modX $modx) {}
 
     public static function validate(array $input): array
     {
         $values = [];
         foreach (self::DEFAULTS as $key => $default) {
-            if (!array_key_exists($key, $input) && in_array($key, ['main_mode', 'main_markdown', 'documents', 'enabled'], true)) { $input[$key] = $default; }
+            if (!array_key_exists($key, $input) && in_array($key, ['main_mode', 'main_markdown', 'documents', 'enabled', 'tv_names', 'ms3_fields'], true)) { $input[$key] = $default; }
             if (!is_string($input[$key] ?? null)) { throw new \InvalidArgumentException('Некорректное поле: ' . $key); }
             $values[$key] = trim($input[$key]);
         }
@@ -35,6 +35,9 @@ final class Manager
         if (!in_array($values['main_mode'], ['auto', 'manual'], true) || !in_array($values['enabled'], ['0', '1'], true)) { throw new \InvalidArgumentException('Некорректный режим генерации.'); }
         if (strlen($values['main_markdown']) > 60000 || ($values['main_mode'] === 'manual' && !preg_match('/^#\s+\S/m', $values['main_markdown']))) { throw new \InvalidArgumentException('Основной Markdown должен содержать заголовок # и быть не больше 60 КБ.'); }
         Documents::validate($values['documents']);
+        foreach (['tv_names', 'ms3_fields'] as $key) {
+            if (strlen($values[$key]) > 2000 || ($values[$key] !== '' && !preg_match('/^[a-zA-Z0-9_]+(?:\s*,\s*[a-zA-Z0-9_]+)*$/D', $values[$key]))) { throw new \InvalidArgumentException('Поля экспорта: укажите имена через запятую.'); }
+        }
         return $values;
     }
 

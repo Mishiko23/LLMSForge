@@ -12,6 +12,8 @@
         <div class="lf-layout"><section class="lf-card"><h2>Описание сайта</h2>
         <label>Название сайта<input id="lf-title" maxlength="500" required></label>
         <label>Краткое описание<textarea id="lf-description" rows="3"></textarea></label>
+        <label>TV для Markdown-карточек (имена через запятую)<input id="lf-tv_names" placeholder="Например: brand,material"></label>
+        <label>Поля miniShop3 для Markdown-карточек<input id="lf-ms3_fields" placeholder="price,article"></label><p class="lf-muted">Доступны price, old_price, article, weight, vendor, made_in. Поля используются только при автоматическом получении текста ресурса.</p>
         <label>Основной llms.txt<select id="lf-main_mode"><option value="auto">Собрать из выбранных страниц</option><option value="manual">Редактировать Markdown вручную</option></select></label>
         <div id="lf-manual-area" hidden><label>Содержимое llms.txt<textarea id="lf-main_markdown" rows="12" placeholder="# Название сайта"></textarea></label><p class="lf-muted">Ссылки на карточки LLMS добавятся в конец автоматически.</p></div>
         <div id="lf-auto-area">
@@ -32,7 +34,7 @@
         </section><aside class="lf-card lf-preview"><h2>Предпросмотр llms.txt</h2><p id="lf-preview-note" class="lf-muted">Нажмите «Предпросмотр», чтобы проверить документ.</p><pre id="lf-output" tabindex="0"></pre><button id="lf-download" type="button" disabled>Скачать llms.txt</button></aside></div>`;
         const el = id => root.querySelector('#lf-' + id);
         let resources = [], sections = {}, documents = [], dirty = false, busy = false, current = '', preview = '', downloadName = 'llms.txt';
-        const fields = ['title', 'description', 'include_ids', 'exclude_ids', 'main_mode', 'main_markdown', 'enabled'];
+        const fields = ['title', 'description', 'include_ids', 'exclude_ids', 'main_mode', 'main_markdown', 'enabled', 'tv_names', 'ms3_fields'];
         function status(text, error = false) { el('status').textContent = text; el('status').className = error ? 'lf-error' : 'lf-notice'; }
         function changed() { dirty = true; preview = ''; mainBytes = null; stats(); el('download').disabled = true; el('preview-note').textContent = 'Настройки изменены. Обновите предпросмотр.'; status('Есть несохранённые изменения.'); }
         let mainBytes = null;

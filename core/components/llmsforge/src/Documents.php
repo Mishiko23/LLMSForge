@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace LLMSForge;
 use MODX\Revolution\{modX, modResource, modResourceGroupResource};
 require_once __DIR__ . '/Renderer.php';
+require_once __DIR__ . '/HtmlToMarkdown.php';
 
 final class Documents
 {
@@ -48,6 +49,10 @@ final class Documents
             if ((int) $parent->get('pub_date') > $now || ((int) $parent->get('unpub_date') > 0 && (int) $parent->get('unpub_date') <= $now)) { return null; }
             $parentId = (int) $parent->get('parent');
         }
+        // Integrators can reject resources with custom visibility rules.
+        foreach ((array) $this->modx->invokeEvent('OnLLMSForgeResourceCheck', ['resource' => $resource, 'context' => $context]) as $decision) {
+            if ($decision === false || $decision === 'exclude') { return null; }
+        }
         return $resource;
     }
 
@@ -57,12 +62,26 @@ final class Documents
         $resource = $this->resource($item['resource_id'], $context);
         if (!$resource) { return null; }
         $renderer = new Renderer();
-        $content = (string) $resource->get('content');
-        $content = preg_replace('~<(script|style)\b[^>]*>.*?</\1>~is', '', $content) ?? '';
-        $content = preg_replace('~</(?:p|div|h[1-6]|li)>|<br\s*/?>~i', "\n\n", $content) ?? '';
-        $paragraphs = array_filter(array_map([$renderer, 'text'], preg_split('/\n\s*\n/', $content) ?: []));
+        $body = (new HtmlToMarkdown())->convert((string) $resource->get('content'));
         $url = $this->modx->makeUrl($item['resource_id'], $context, '', 'full');
-        return '# ' . $renderer->text((string) $resource->get('pagetitle')) . "\n\n" . $renderer->text((string) $resource->get('description')) . "\n\n" . implode("\n\n", $paragraphs) . "\n\nИсточник: " . $url . "\n";
+        $extra = [];
+        $siteContext = $this->modx->getContext($context);
+        foreach (array_filter(array_map('trim', explode(',', (string) $siteContext->getOption('llmsforge.tv_names', '')))) as $name) {
+            if (!preg_match('/^[a-zA-Z0-9_]+$/D', $name)) { continue; }
+            $value = $resource->getTVValue($name);
+            if (is_scalar($value) && trim((string) $value) !== '') { $extra[] = '- ' . $name . ': ' . $renderer->text((string) $value); }
+        }
+        if (class_exists(\MiniShop3\Model\msProductData::class)) {
+            $data = $this->modx->getObject(\MiniShop3\Model\msProductData::class, $item['resource_id']);
+            if ($data) {
+                foreach (array_filter(array_map('trim', explode(',', (string) $siteContext->getOption('llmsforge.ms3_fields', 'price,article')))) as $field) {
+                    if (!in_array($field, ['price', 'old_price', 'article', 'weight', 'vendor', 'made_in'], true)) { continue; }
+                    $value = $data->get($field);
+                    if (is_scalar($value) && trim((string) $value) !== '') { $extra[] = '- ' . $field . ': ' . $renderer->text((string) $value); }
+                }
+            }
+        }
+        return '# ' . $renderer->text((string) $resource->get('pagetitle')) . "\n\n" . $renderer->text((string) $resource->get('description')) . "\n\n" . $body . ($extra ? "\n\n## Свойства\n\n" . implode("\n", $extra) : '') . "\n\nИсточник: " . $url . "\n";
     }
 
     public function links(array $items, string $context, string $baseUrl): array
