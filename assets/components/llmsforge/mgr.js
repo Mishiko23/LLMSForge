@@ -78,13 +78,45 @@
                     control.addEventListener(type === 'select' ? 'change' : 'input', () => { item[name] = name === 'resource_id' ? Number(control.value) : control.value; changed(); if (name === 'mode') renderDocuments(); });
                     wrapper.append(control); card.append(wrapper); return control;
                 }
-                field('Название', 'title'); field('Адрес Markdown: /llms-txt/…', 'slug'); field('Раздел в основном файле', 'section');
+                const titleInput = field('Название', 'title'); const slugInput = field('Адрес Markdown: /llms-txt/…', 'slug'); field('Раздел в основном файле', 'section');
                 field('Источник содержимого', 'mode', 'select', [['manual', 'Написать Markdown вручную'], ['resource', 'Получать из ресурса MODX']]);
                 if (item.mode === 'resource') {
-                    const choices = [['0', 'Выберите ресурс'], ...resources.map(r => [String(r.id), '#' + r.id + ' · ' + r.title])];
-                    if (item.resource_id && !resources.some(r => r.id === item.resource_id)) choices.push([String(item.resource_id), '#' + item.resource_id]);
-                    field('Ресурс: страница, товар, категория или статья', 'resource_id', 'select', choices);
-                    field('ID ресурса (можно ввести вручную)', 'resource_id');
+                    const searchLabel = document.createElement('label'); searchLabel.textContent = 'Поиск ресурса по названию или ID';
+                    const search = document.createElement('input'); search.type = 'search'; search.placeholder = 'Введите название или ID'; searchLabel.append(search); card.append(searchLabel);
+                    const picker = field('Ресурс: страница, товар, категория или статья', 'resource_id', 'select');
+                    const manualId = field('ID ресурса (можно ввести вручную)', 'resource_id');
+                    manualId.type = 'number'; manualId.min = '1';
+                    const hint = document.createElement('p'); hint.className = 'lf-muted'; card.append(hint);
+                    function updateChoices() {
+                        const query = search.value.trim().toLocaleLowerCase();
+                        const matches = resources.filter(r => (r.id + ' ' + r.title).toLocaleLowerCase().includes(query));
+                        const shown = matches.slice(0, 50);
+                        if (item.resource_id && !shown.some(r => r.id === item.resource_id)) {
+                            const currentResource = resources.find(r => r.id === item.resource_id);
+                            shown.unshift(currentResource || {id: item.resource_id, title: 'Текущий ресурс'});
+                        }
+                        picker.replaceChildren();
+                        const placeholder = document.createElement('option'); placeholder.value = '0'; placeholder.textContent = 'Выберите ресурс'; picker.append(placeholder);
+                        shown.forEach(r => { const option = document.createElement('option'); option.value = String(r.id); option.textContent = '#' + r.id + ' · ' + r.title; picker.append(option); });
+                        picker.value = String(item.resource_id || 0);
+                        hint.textContent = matches.length > 50 ? 'Найдено ' + matches.length + '. Показаны первые 50; уточните поиск.' : 'Найдено ' + matches.length + '.';
+                    }
+                    search.addEventListener('input', updateChoices);
+                    picker.addEventListener('change', () => {
+                        manualId.value = String(item.resource_id);
+                        const resource = resources.find(r => r.id === item.resource_id);
+                        if (resource && !item.title.trim()) { item.title = resource.title; titleInput.value = resource.title; }
+                        if (resource && /^page-[a-z0-9]+$/.test(item.slug)) {
+                            const used = new Set(documents.filter(other => other !== item).map(other => other.slug));
+                            const base = 'resource-' + resource.id; let slug = base, suffix = 2;
+                            while (used.has(slug)) slug = base + '-' + suffix++;
+                            item.slug = slug; slugInput.value = slug;
+                        }
+                        updateChoices();
+                    });
+                    manualId.addEventListener('input', updateChoices);
+                    if (card.open) updateChoices();
+                    else card.addEventListener('toggle', () => { if (card.open) updateChoices(); });
                 } else { field('Полный URL исходной страницы', 'url'); field('Markdown для AI', 'markdown', 'textarea'); }
                 const actions = document.createElement('div'); actions.className = 'lf-actions';
                 const view = document.createElement('button'); view.type = 'button'; view.textContent = 'Предпросмотр страницы';

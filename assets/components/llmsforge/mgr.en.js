@@ -14,7 +14,7 @@
         'LLMS для отдельных страниц': 'LLMS for individual pages', 'Создать карточки из выбранных': 'Create cards from selected', '+ Добавить LLMS для страницы': '+ Add page LLMS', 'Сохранить настройки': 'Save settings', 'Предпросмотр': 'Preview',
         'Предпросмотр llms.txt': 'llms.txt preview', 'Скачать llms.txt': 'Download llms.txt', 'Скачать документ': 'Download document', 'Название': 'Title',
         'Раздел в основном файле': 'Section in main file', 'Источник содержимого': 'Content source', 'Написать Markdown вручную': 'Write Markdown manually',
-        'Получать из ресурса MODX': 'Read MODX resource', 'Полный URL исходной страницы': 'Full source page URL', 'Markdown для AI': 'Markdown for AI',
+        'Получать из ресурса MODX': 'Read MODX resource', 'Поиск ресурса по названию или ID': 'Search resource by title or ID', 'Ресурс: страница, товар, категория или статья': 'Resource: page, product, category, or article', 'ID ресурса (можно ввести вручную)': 'Resource ID (or enter manually)', 'Полный URL исходной страницы': 'Full source page URL', 'Markdown для AI': 'Markdown for AI',
         'Предпросмотр страницы': 'Preview page', 'Удалить': 'Remove', 'В таблице': 'Listed', 'Выбрано ID': 'Selected IDs', 'Исключено ID': 'Excluded IDs',
         'Карточек Markdown': 'Markdown cards', 'Из ресурсов / вручную': 'From resources / manual', 'Объём llms.txt': 'llms.txt size'
     };
