@@ -50,7 +50,9 @@ final class Documents
             $parentId = (int) $parent->get('parent');
         }
         // Integrators can reject resources with custom visibility rules.
-        foreach ((array) $this->modx->invokeEvent('OnLLMSForgeResourceCheck', ['resource' => $resource, 'context' => $context]) as $decision) {
+        $decisions = $this->modx->invokeEvent('OnLLMSForgeResourceCheck', ['resource' => $resource, 'context' => $context]);
+        // MODX returns false when an event has no handlers; only a handler response may veto export.
+        foreach ($decisions === false ? [] : (array) $decisions as $decision) {
             if ($decision === false || $decision === 'exclude') { return null; }
         }
         return $resource;
