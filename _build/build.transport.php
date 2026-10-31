@@ -39,14 +39,16 @@ $plugin = $modx->newObject(\MODX\Revolution\modPlugin::class);
 $plugin->fromArray(['name' => 'LLMSForgeRouter', 'plugincode' => preg_replace('/^<\?php\s*/', '', file_get_contents($source . '/elements/plugins/router.php')), 'disabled' => 0], '', true);
 $event = $modx->newObject(\MODX\Revolution\modPluginEvent::class);
 $event->fromArray(['event' => 'OnPageNotFound', 'priority' => 0], '', true);
-$plugin->addMany([$event], 'PluginEvents');
+$pluginEvents = [$event];
+$plugin->addMany($pluginEvents, 'PluginEvents');
 $builder->putVehicle($builder->createVehicle($plugin, [xPDOTransport::UNIQUE_KEY => 'name', xPDOTransport::PRESERVE_KEYS => false, xPDOTransport::UPDATE_OBJECT => true, xPDOTransport::RELATED_OBJECTS => true, xPDOTransport::RELATED_OBJECT_ATTRIBUTES => ['PluginEvents' => [xPDOTransport::UNIQUE_KEY => ['pluginid', 'event'], xPDOTransport::PRESERVE_KEYS => true, xPDOTransport::UPDATE_OBJECT => true]]]));
 require_once $source . '/src/Manager.php';
 $tracking = $modx->newObject(\MODX\Revolution\modPlugin::class);
 $tracking->fromArray(['name' => 'LLMSForgeVisits', 'plugincode' => preg_replace('/^<\?php\s*/', '', file_get_contents($source . '/elements/plugins/visits.php')), 'disabled' => 0], '', true);
 $trackingEvent = $modx->newObject(\MODX\Revolution\modPluginEvent::class);
 $trackingEvent->fromArray(['event' => 'OnHandleRequest', 'priority' => -1000], '', true);
-$tracking->addMany([$trackingEvent], 'PluginEvents');
+$trackingEvents = [$trackingEvent];
+$tracking->addMany($trackingEvents, 'PluginEvents');
 $builder->putVehicle($builder->createVehicle($tracking, [xPDOTransport::UNIQUE_KEY => 'name', xPDOTransport::PRESERVE_KEYS => false, xPDOTransport::UPDATE_OBJECT => true, xPDOTransport::RELATED_OBJECTS => true, xPDOTransport::RELATED_OBJECT_ATTRIBUTES => ['PluginEvents' => [xPDOTransport::UNIQUE_KEY => ['pluginid', 'event'], xPDOTransport::PRESERVE_KEYS => true, xPDOTransport::UPDATE_OBJECT => true]]]));
 foreach (\LLMSForge\Manager::DEFAULTS as $name => $value) {
     $setting = $modx->newObject(modSystemSetting::class);
