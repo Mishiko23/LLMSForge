@@ -45,6 +45,7 @@ try {
             'Запись журнала' => is_dir($writablePath) && is_writable($writablePath),
             'Адрес llms.txt свободен' => !$fileConflict && !$resourceConflict,
             'Расширение DOM' => extension_loaded('dom'),
+            'Расширение mbstring' => extension_loaded('mbstring'),
             'PHP 8.1+' => PHP_VERSION_ID >= 80100,
         ];
         $reply(true, ['checks' => $checks, 'url' => rtrim((string) $siteContext->getOption('site_url'), '/') . '/llms.txt']);

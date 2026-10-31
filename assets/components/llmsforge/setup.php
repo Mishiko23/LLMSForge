@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     try {
         if ((int) ($modx->getVersionData()['version'] ?? 0) !== 3) { throw new RuntimeException('Требуется MODX 3.'); }
-        if (PHP_VERSION_ID < 80100 || !extension_loaded('dom') || !extension_loaded('json')) { throw new RuntimeException('Требуется PHP 8.1+, расширения DOM и JSON.'); }
+        if (PHP_VERSION_ID < 80100 || !extension_loaded('dom') || !extension_loaded('json') || !extension_loaded('mbstring')) { throw new RuntimeException('Требуется PHP 8.1+, расширения DOM, JSON и mbstring.'); }
         $component = MODX_CORE_PATH . 'components/llmsforge/';
         foreach (['src/Generator.php', 'src/Renderer.php', 'src/Manager.php', 'src/Documents.php', 'controllers/index.class.php', 'elements/snippets/llmsforge.php', 'elements/plugins/router.php'] as $file) {
             if (!is_readable($component . $file)) { throw new RuntimeException('Не загружен файл core/components/llmsforge/' . $file); }
