@@ -1,5 +1,7 @@
 # LLMS Forge для MODX 3
 
+![LLMS Forge: публикация контента для AI](/docs/assets/llmsforge-overview.png)
+
 Бесплатное дополнение для создания `/llms.txt` и отдельных Markdown-карточек страниц. Лицензия — GPL-3.0, полный текст в [`COPYING`](COPYING). Издатель: [Mishiko23](https://github.com/Mishiko23).
 
 ## Возможности
