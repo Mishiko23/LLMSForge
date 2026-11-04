@@ -1,13 +1,13 @@
 # LLMS Forge — llms.txt generator for MODX 3
 
-This free extra publishes a Markdown guide to your site for AI agents. Curate `/llms.txt` in the MODX manager and create separate Markdown descriptions for important pages.
+**Publisher:** Mishiko23 · **License:** GPL-3.0 · **Price:** Free
 
-Features: automatic generation from selected resources or manually edited Markdown; sections, search and bulk selection; individual `/llms-txt/…` pages for products and articles; preview; context-specific settings; a 30-day request log for recognized AI bot User-Agents.
+Publish `/llms.txt` and individual Markdown cards for products, categories, articles, and other MODX resources from the manager interface.
 
-The extra does not guarantee indexing or citation by AI systems. Bot names are inferred from User-Agent and can be spoofed. The log counts requests that reach MODX. Automatic content uses standard MODX resource fields; miniShop3 prices, stock and properties, template variables and snippet output are not included.
+Features include automatic or manual Markdown, searchable resource selection, up to 5000 selected pages, up to 200 individual cards, bulk card creation, previews, per-context settings, installation diagnostics, and 30-day AI-bot request statistics. Automatic cards can include selected TVs and miniShop3 fields such as `price` and `article`.
 
-Requirements: MODX Revolution 3, PHP 8.1+, friendly URL routing into MODX, and a PHP-writable `core/components/llmsforge/var/visits` directory for the request log.
+Use it for product catalogs, company documentation, knowledge bases, and blogs. Publishing `llms.txt` does not guarantee AI indexing or citations. Bot names are inferred from User-Agent strings. Automatic export checks publication, dates, access rights, resource groups, and ancestors. Manual cards are independent public text.
 
-Install the transport package through the MODX package manager. Open Components → LLMS Forge, enter a site title and summary, select pages, preview the output, enable publication and save. Check the public `/llms.txt` URL and the installation diagnostics in the component.
+Requires MODX Revolution 3, PHP 8.1+, DOM, JSON, mbstring, Friendly URLs, and web-server routing of unknown paths into MODX. Install the transport package, open **Components → LLMS Forge**, select a context, configure pages, preview, enable publication, save, and check the public URL.
 
-Use cases: company documentation, product catalogues with detailed Markdown cards, article collections, and multilingual sites configured by context.
+Source and support: [GitHub](https://github.com/Mishiko23/LLMSForge). [Russian documentation](https://github.com/Mishiko23/LLMSForge/blob/main/README.md) · [English documentation](https://github.com/Mishiko23/LLMSForge/blob/main/docs/README.en.md).

@@ -9,10 +9,10 @@ require $argv[2];
 require_once MODX_CORE_PATH . 'vendor/autoload.php';
 $modx = new \MODX\Revolution\modX();
 $modx->initialize('mgr');
-$package = $modx->getObject(\MODX\Revolution\Transport\modTransportPackage::class, ['signature' => 'llmsforge-0.6.6-alpha']);
+$package = $modx->getObject(\MODX\Revolution\Transport\modTransportPackage::class, ['signature' => 'llmsforge-1.0.0-pl']);
 if (!$package) {
     $package = $modx->newObject(\MODX\Revolution\Transport\modTransportPackage::class);
-    $package->fromArray(['signature' => 'llmsforge-0.6.6-alpha', 'package_name' => 'llmsforge', 'version_major' => 0, 'version_minor' => 6, 'version_patch' => 6, 'release' => 'alpha', 'state' => 1, 'workspace' => 1, 'created' => date('Y-m-d H:i:s')], '', true);
+    $package->fromArray(['signature' => 'llmsforge-1.0.0-pl', 'package_name' => 'llmsforge', 'version_major' => 1, 'version_minor' => 0, 'version_patch' => 0, 'release' => 'pl', 'state' => 1, 'workspace' => 1, 'created' => date('Y-m-d H:i:s')], '', true);
     if (!$package->save()) { throw new RuntimeException('Could not register test package'); }
 }
 if (!$package->install()) { throw new RuntimeException('Transport install failed; inspect MODX error log'); }

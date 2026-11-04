@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace LLMSForge;
 
-use MODX\Revolution\modResource;
-use MODX\Revolution\modResourceGroupResource;
 use MODX\Revolution\modX;
 
 require_once __DIR__ . '/Renderer.php';
@@ -38,17 +36,7 @@ final class Generator
                 continue;
             }
             $resource = $documents->resource($id, $context);
-            if (!$resource || !$resource->checkPolicy('view')) {
-                continue;
-            }
-            // Conservative public export: all grouped resources are excluded, even for administrators.
-            if ($this->modx->getCount(modResourceGroupResource::class, ['document' => $id]) > 0) {
-                continue;
-            }
-            $now = time();
-            if ((int) $resource->get('pub_date') > $now || ((int) $resource->get('unpub_date') > 0 && (int) $resource->get('unpub_date') <= $now)) {
-                continue;
-            }
+            if (!$resource) { continue; }
             $pages[] = [
                 'title' => $resource->get('pagetitle'),
                 'description' => $resource->get('description'),

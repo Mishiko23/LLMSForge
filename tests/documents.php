@@ -36,6 +36,12 @@ namespace {
     $modx->rows[2]->data['unpub_date'] = time() - 1;
     if ($documents->markdown($auto, 'web') !== null) throw new RuntimeException('Expired resource leaked');
     $modx->rows[2]->data['unpub_date'] = 0;
+    $modx->rows[2]->data['pub_date'] = date('Y-m-d H:i:s', time() + 86400);
+    if ($documents->markdown($auto, 'web') !== null) throw new RuntimeException('Future datetime resource leaked');
+    $modx->rows[2]->data['pub_date'] = 0;
+    $modx->rows[2]->data['unpub_date'] = date('Y-m-d H:i:s', time() - 1);
+    if ($documents->markdown($auto, 'web') !== null) throw new RuntimeException('Expired datetime resource leaked');
+    $modx->rows[2]->data['unpub_date'] = 0;
     $modx->rows[2]->data['parent'] = 10;
     if ($documents->markdown($auto, 'web') !== null) throw new RuntimeException('Missing ancestor allowed');
     echo "Document validation, conversion and access checks passed\n";

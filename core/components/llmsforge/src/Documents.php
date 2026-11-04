@@ -9,6 +9,20 @@ final class Documents
 {
     public function __construct(private modX $modx) {}
 
+    private static function dateAllowsExport(modResource $resource): bool
+    {
+        $parse = static function ($value): ?int {
+            if ($value === null || $value === '' || $value === 0 || $value === '0' || $value === '0000-00-00 00:00:00') { return 0; }
+            if (is_numeric($value)) { return (int) $value; }
+            $timestamp = strtotime((string) $value);
+            return $timestamp === false ? null : $timestamp;
+        };
+        $publishedAt = $parse($resource->get('pub_date'));
+        $unpublishedAt = $parse($resource->get('unpub_date'));
+        $now = time();
+        return $publishedAt !== null && $unpublishedAt !== null && $publishedAt <= $now && ($unpublishedAt === 0 || $unpublishedAt > $now);
+    }
+
     public static function validate(string $json): array
     {
         $items = json_decode($json, true);
@@ -37,8 +51,7 @@ final class Documents
     {
         $resource = $this->modx->getObject(modResource::class, ['id' => $id, 'context_key' => $context, 'published' => 1, 'deleted' => 0, 'searchable' => 1]);
         if (!$resource || !$resource->checkPolicy('view') || $this->modx->getCount(modResourceGroupResource::class, ['document' => $id])) { return null; }
-        $now = time();
-        if ((int) $resource->get('pub_date') > $now || ((int) $resource->get('unpub_date') > 0 && (int) $resource->get('unpub_date') <= $now)) { return null; }
+        if (!self::dateAllowsExport($resource)) { return null; }
         $parentId = (int) $resource->get('parent');
         $visited = [$id => true];
         while ($parentId > 0) {
@@ -46,7 +59,7 @@ final class Documents
             $visited[$parentId] = true;
             $parent = $this->modx->getObject(modResource::class, ['id' => $parentId, 'context_key' => $context, 'published' => 1, 'deleted' => 0]);
             if (!$parent || !$parent->checkPolicy('view') || $this->modx->getCount(modResourceGroupResource::class, ['document' => $parentId])) { return null; }
-            if ((int) $parent->get('pub_date') > $now || ((int) $parent->get('unpub_date') > 0 && (int) $parent->get('unpub_date') <= $now)) { return null; }
+            if (!self::dateAllowsExport($parent)) { return null; }
             $parentId = (int) $parent->get('parent');
         }
         // Integrators can reject resources with custom visibility rules.
