@@ -5,6 +5,7 @@
 - Пакет MODX 3: [`dist/llmsforge-1.0.0-pl.transport.zip`](../dist/llmsforge-1.0.0-pl.transport.zip) — 73 158 байт.
 - Название, краткое и полное описание, история версии: [`modstore-listing.ru.md`](modstore-listing.ru.md).
 - Логотип для формы Modstore: [`assets/llmsforge-modstore-320x240.png`](assets/llmsforge-modstore-320x240.png) — PNG, ровно 320 × 240 px.
+- Второе изображение для карточки: [`assets/llmsforge-modstore-gallery-2-320x240.png`](assets/llmsforge-modstore-gallery-2-320x240.png) — PNG, ровно 320 × 240 px.
 - Исходный квадратный логотип: [`assets/llmsforge-logo.png`](assets/llmsforge-logo.png).
 - Иллюстрация: [`assets/llmsforge-overview.png`](assets/llmsforge-overview.png).
 - Демонстрационный снимок панели: [`admin-preview.png`](admin-preview.png). Он содержит демонстрационные данные; для галереи желательно снять актуальную установленную панель MODX.
