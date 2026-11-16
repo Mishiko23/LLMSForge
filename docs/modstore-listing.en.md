@@ -10,4 +10,4 @@ Use it for product catalogs, company documentation, knowledge bases, and blogs. 
 
 Requires MODX Revolution 3, PHP 8.1+, DOM, JSON, mbstring, Friendly URLs, and web-server routing of unknown paths into MODX. Install the transport package, open **Components → LLMS Forge**, select a context, configure pages, preview, enable publication, save, and check the public URL.
 
-Source and support: [GitHub](https://github.com/Mishiko23/LLMSForge). [Russian documentation](https://github.com/Mishiko23/LLMSForge/blob/main/README.md) · [English documentation](https://github.com/Mishiko23/LLMSForge/blob/main/docs/README.en.md).
+Source and support: [GitHub](https://github.com/Mishiko23/LLMSForge). [Russian documentation](https://docs.modx.pro/components/llmsforge/) · [English documentation](https://docs.modx.pro/en/components/llmsforge/).
